@@ -1,15 +1,4 @@
-; Instituto Tecnológico de Costa Rica
-; Inteligencia Artificial
-; I Tarea
-; Manuel Ruiz
-; Jorge Gatgens
-;
-; Profesora: Maria Auxiliadora Mora
-; I semestre 2020
-
 #lang racket
-
-
 
 (require racket/gui)
 (require (lib "graphics.ss" "graphics")) (open-graphics)
