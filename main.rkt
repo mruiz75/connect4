@@ -99,10 +99,14 @@
     (super-new)
     (define/override (on-event event)
     (define colum -1)
+    (define tiempo1 0)
     (if (equal? iniciaComputadora #t)
         ;aqui iria la funcion de IA y se elimina la mayoria de lo de abajo. Ahorita solo esta para probar dos jugadores
           (begin
+            (set! tiempo1 (/ (current-inexact-milliseconds) 1000))
             (set! colum (minimax (lista gameBoard) -10000 0))
+            (display (- (/ (current-inexact-milliseconds) 1000) tiempo1))
+            (display "  ")
             (placeTile colum)
             (cond
               [(gano (lista gameBoard) 1)
@@ -428,7 +432,7 @@
   (cond [(equal? option 0)
          (define (iterator i)
            (cond
-             [(and (equal? winner #f) (equal? tie #f) (< i 1000))
+             [(and (equal? winner #f) (equal? tie #f) (< i 10000))
                 (cond
                   [(equal? iniciaComputadora #f)
                      (showBoard gameBoard)

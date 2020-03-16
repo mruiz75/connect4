@@ -4,13 +4,6 @@
 (provide lista)
 (provide gano)
 
-(define matriz (list (list 0 0 0 0 0 0 0)
-                     (list 0 0 0 0 0 0 0)
-                     (list 0 0 0 0 0 0 0)
-                     (list 0 2 2 0 0 0 0)
-                     (list 1 1 1 2 0 0 0)
-                     (list 1 1 2 1 2 2 0)))
-
 (define (lista gameBoard)
   (define milista '())
   (for ([i '(0 1 2 3 4 5)])
