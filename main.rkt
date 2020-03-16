@@ -12,6 +12,7 @@
 
 ; LIBRERIAS =====================================================================================
 
+(require "minimax.rkt")
 (require racket/gui)
 (require (lib "graphics.ss" "graphics")) (open-graphics)
 
@@ -97,28 +98,24 @@
   (class canvas%
     (super-new)
     (define/override (on-event event)
+    (define colum -1)
     (if (equal? iniciaComputadora #t)
         ;aqui iria la funcion de IA y se elimina la mayoria de lo de abajo. Ahorita solo esta para probar dos jugadores
-          (cond ([send event get-left-down]
-                 (let* ([col (floor (/ (send event get-x) 100))])
-                   (begin
-                     (cond
-                       [(validCol col)
-                        (begin
-                          (placeTile col)
-                          (cond
-                            [(validateWin (+ (vector-ref firstSlotAvailable col) 1) col)
-                             (begin
-                               (showBoard gameBoard)
-                               (set! winner #t)
-                               (send winFrame show #t))]
-                            [#t (begin
-                                  (if (equal? color #t)
-                                      (set! color #f)
-                                      (set! color #t))
-                                  (send msgGameBoard set-label "Turno del jugador")
-                                  (set! iniciaComputadora #f))]))]
-                       [#t (send msgGameBoard set-label "Columna llena, intente en otro lugar!")])))))
+          (begin
+            (set! colum (minimax (lista gameBoard) -10000 0))
+            (placeTile colum)
+            (cond
+              [(gano (lista gameBoard) 1)
+               (begin
+                 (showBoard gameBoard)
+                 (set! winner #t)
+                 (send winFrame show #t))]
+              [#t (begin
+                    (if (equal? color #t)
+                        (set! color #f)
+                        (set! color #t))
+                    (send msgGameBoard set-label "Turno del jugador")
+                    (set! iniciaComputadora #f))]))
 
            (cond ([send event get-left-down]
                   (let* ([col (floor (/ (send event get-x) 100))])
@@ -128,7 +125,7 @@
                          (begin
                            (placeTile col)
                            (cond
-                             [(validateWin (+ (vector-ref firstSlotAvailable col) 1) col)
+                             [(gano (lista gameBoard) 2)
                               (begin
                                 (showBoard gameBoard)
                                 (set! winner #t)

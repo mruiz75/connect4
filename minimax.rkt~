@@ -1,21 +1,11 @@
 #lang racket
 
-(provide minimax)
-(provide lista)
-(provide gano)
-
 (define matriz (list (list 0 0 0 0 0 0 0)
                      (list 0 0 0 0 0 0 0)
                      (list 0 0 0 0 0 0 0)
-                     (list 0 2 2 0 0 0 0)
-                     (list 1 1 1 2 0 0 0)
-                     (list 1 1 2 1 2 2 0)))
-
-(define (lista gameBoard)
-  (define milista '())
-  (for ([i '(0 1 2 3 4 5)])
-    (set! milista (append milista (list (vector->list (vector-ref gameBoard i))))))
-  milista)
+                     (list 0 0 0 0 0 0 0)
+                     (list 0 0 0 0 0 0 0)
+                     (list 0 0 0 2 0 0 0)))
 
 
 (define (jugada tablero jugador columna)
@@ -33,7 +23,7 @@
 (define (minimax tablero maximo columna)
   (cond
     [(> columna 6) mejor-columna]
-    [else (set! maximo-actual (valor-min (jugada tablero 1 columna) 1 -10000 10000))
+    [else (set! maximo-actual (valor-max tablero 1 -10000 10000 columna))
           (cond
             [(> maximo-actual maximo)
              (set! maximo maximo-actual)
@@ -41,32 +31,36 @@
              (minimax tablero maximo (add1 columna))]
             [else (minimax tablero maximo (add1 columna))])]))
 
-(define (valor-max tablero altura alfa beta)
+(define (valor-max tablero altura alfa beta columna)
   (cond
-    [(or (estado-terminal tablero) (= altura 6)) (eval tablero)]
+    [(or (estado-terminal tablero) (= altura 16)) (eval tablero)]
     [else
-     (for ([i '(0 1 2 3 4 5 6)])
-       (set! alfa (max alfa (valor-min (jugada tablero 1 i) (add1 altura) alfa beta)))
-       (cond [(>= alfa beta) beta]))
+     (cond
+       [(= columna 6)
+        (set! alfa (max alfa (valor-min (jugada tablero 1 columna) (add1 altura) alfa beta 0)))]
+       [(< columna 6)
+        (set! alfa (max alfa (valor-min (jugada tablero 1 columna) (add1 altura) alfa beta (add1 columna))))]
+       [(>= alfa beta) beta])
      alfa]))
 
-(define (valor-min tablero altura alfa beta)
+(define (valor-min tablero altura alfa beta columna)
   (cond
-    [(or (estado-terminal tablero) (= altura 6)) (eval tablero)]
+    [(or (estado-terminal tablero) (= altura 16)) (eval tablero)]
     [else
-     (for ([i '(0 1 2 3 4 5 6)])
-       (set! beta (min beta (valor-max (jugada tablero 2 i) (add1 altura) alfa beta)))
-       (cond [(>= alfa beta) alfa]))
+     (cond
+       [(= columna 6)
+        (set! beta (min beta (valor-max (jugada tablero 2 columna) (add1 altura) alfa beta 0)))]
+       [(< columna 6)
+        (set! beta (min beta (valor-max (jugada tablero 2 columna) (add1 altura) alfa beta (add1 columna))))]
+       [(>= alfa beta) alfa])
      beta]))
 
 (define (estado-terminal tablero)
   (not (list? (member 0 (list-ref tablero 0)))))
 
 (define (eval tablero)
-  (cond
-    [(gano tablero 1) 10000]
-    [(gano tablero 2) -10000]
-    [else (- (costo tablero 1) (costo tablero 2))]))
+  (- (costo tablero 1) (costo tablero 2)))
+  
 
 (define (costo tablero jugador)
   (define total 0)
@@ -308,134 +302,6 @@
                (= (list-ref (list-ref tablero (+ i 3)) (- j 3)) 0)))
              (set! total (add1 total)) empty)])))
   total)
-
-
-(define (gano tablero jugador)
-  (define win #f)
-  (for ([i '(5 4 3 2 1 0)])
-    (for ([j '(0 1 2 3 4 5 6)])
-      (cond
-        [(and (> i 2) (< j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) j) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) (+ j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 3)) jugador))
-             (set! win #t) empty)]
-        [(and (> i 2) (= j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) j) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-               (= (list-ref (list-ref tablero (- i 1)) (+ j 1)) jugador)
-               (= (list-ref (list-ref tablero (- i 2)) (+ j 2)) jugador)
-               (= (list-ref (list-ref tablero (- i 3)) (+ j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 3)) jugador))
-             (set! win #t) empty)]
-        [(and (> i 2) (> j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (- i 1)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 2)) j) jugador)
-              (= (list-ref (list-ref tablero (- i 3)) j) jugador))
-             (set! win #t) empty)]
-        [(and (< i 3) (< j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (+ i 1)) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero (+ i 2)) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero (+ i 3)) (+ j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 3)) jugador))
-             (set! win #t) empty)]
-        [(and (< i 3) (= j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (+ i 1)) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero (+ i 2)) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero (+ i 3)) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (+ i 1)) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero (+ i 2)) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero (+ i 3)) (+ j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (+ j 3)) jugador))
-             (set! win #t) empty)]
-        [(and (< i 3) (> j 3))
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero i) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero i) (- j 3)) jugador))
-             (set! win #t) empty)
-         (if (and
-              (= (list-ref (list-ref tablero i) j) jugador)
-              (= (list-ref (list-ref tablero (+ i 1)) (- j 1)) jugador)
-              (= (list-ref (list-ref tablero (+ i 2)) (- j 2)) jugador)
-              (= (list-ref (list-ref tablero (+ i 3)) (- j 3)) jugador))
-             (set! win #t) empty)])))
-  win)
 
 
 
