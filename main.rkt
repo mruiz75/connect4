@@ -68,6 +68,12 @@
                     [width 700]
                     [height 600]))
 
+(define endFrame (new frame%
+                      [label "Conecta 4"]
+                      [width 700]
+                      [height 600]))
+                           
+
 
 (define msg (new message% [parent frame]
                           [label "Bienvenido a Conecta 4. Selecciona una opción:"]))
@@ -81,13 +87,14 @@
 (define colorMsg (new message% [parent colorPickFrame]
                           [label "¿Qué color de fichas deseas?"]))
 
-
 (define winMsg (new message% [parent winFrame]
                           [label "Felicidades, has ganado el juego!!"]))
 
-
 (define loseMsg (new message% [parent loseFrame]
                           [label "Ha ganado la computadora. Vuelve a intentarlo cuando quieras!"]))
+
+(define endMsg (new message% [parent endFrame]
+                          [label "Ha terminado el juego."]))
 
 ; Esta clase de objeto crea un canvas que determina la posición en el eje X donde se hace click. Una vez hecho
 ; el click, se procesa esa información para encontrar la columna donde colocar la ficha y se hace el análisis de
@@ -101,7 +108,6 @@
     (define colum -1)
     (define tiempo1 0)
     (if (equal? iniciaComputadora #t)
-        ;aqui iria la funcion de IA y se elimina la mayoria de lo de abajo. Ahorita solo esta para probar dos jugadores
           (begin
             (set! tiempo1 (/ (current-inexact-milliseconds) 1000))
             (set! colum (minimax (lista gameBoard) -10000 0))
@@ -111,7 +117,9 @@
             (cond
               [(gano (lista gameBoard) 1)
                (begin
-                 (showBoard gameBoard)
+                 ;(showBoard gameBoard)                
+                 (send gameFrame show #f)
+                 (send endFrame show #t)
                  (set! winner #t)
                  (send winFrame show #t))]
               [#t (begin
@@ -131,7 +139,9 @@
                            (cond
                              [(gano (lista gameBoard) 2)
                               (begin
-                                (showBoard gameBoard)
+                                ;(showBoard gameBoard)
+                                (send gameFrame show #f)
+                                (send endFrame show #t)
                                 (set! winner #t)
                                 (send winFrame show #t))]
                              [#t (begin
@@ -140,8 +150,7 @@
                                        (set! color #t))
                                    (send msgGameBoard set-label "Turno de la computadora")
                                    (set! iniciaComputadora #t))]))]
-                        [#t (send msgGameBoard set-label "Columna llena, intente en otro lugar!")]))))))))
-    )
+                        [#t (send msgGameBoard set-label "Columna llena, intente en otro lugar!")])))))))))
 
 
 (define canvas
@@ -150,6 +159,13 @@
        [min-height 600]
        [paint-callback
          (lambda (canvas dc) (paint dc))]))
+
+(define endCanvas
+  (new canvas% [parent endFrame]
+       [min-width 700]
+       [min-height 600]
+       [paint-callback
+        (lambda (endCanvas dc) (paint dc))]))
 
 
 (new button% [parent frame]
@@ -197,7 +213,6 @@
                          (startConnect4 0)
                          )])
 
-
 (new button% [parent loseFrame]
              [label "Cerrar"]
              [callback (lambda (button event)
@@ -243,6 +258,14 @@
     (drawBoard)
     (addTiles)
     (send canvas refresh)
+    (sleep/yield 0.01)))
+
+(define (showEndBoard gameBoard)
+  (begin
+    (send bitmap-dc clear)
+    (drawBoard)
+    (addTiles)
+    (send endCanvas refresh)
     (sleep/yield 0.01)))
 
 ; Función encargada de dibujar el tablero de juego
@@ -433,18 +456,18 @@
          (define (iterator i)
            (cond
              [(and (equal? winner #f) (equal? tie #f) (< i 10000))
-                (cond
-                  [(equal? iniciaComputadora #f)
-                     (showBoard gameBoard)
-                     (iterator (+ i 1))]
-                  [else
-                     (showBoard gameBoard)
-                     (iterator (+ i 1))])]
+                 (showBoard gameBoard)
+                 (iterator (+ i 1))]
+             [(equal? winner #t)              
+                 (+ i 10000)
+                 (startConnect4 2)]
            ))
          (iterator 0)]
         [(equal? option 1)
          (send frame show #f)
          (exit)]
+        [(equal? option 2)
+         (showEndBoard gameBoard)]
         ))
 
 
