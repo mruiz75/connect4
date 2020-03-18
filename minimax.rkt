@@ -42,12 +42,10 @@
 
 ;Funcion del valormax del minimax que jugara por la IA
 (define (valor-max tablero altura alfa beta IA jugador)
-  (display altura)
   (cond
-    [(or (estado-terminal tablero) (= altura 4)) (eval tablero IA jugador)]
+    [(or (estado-terminal tablero) (= altura 6)) (eval tablero IA jugador)]
     [else
      (for ([i '(0 1 2 3 4 5 6)])
-       (set! altura (sub1 altura))
        (cond
          [(verificar-columna tablero i)
           (set! alfa (max alfa (valor-min (jugada tablero IA i) (add1 altura) alfa beta IA jugador)))
@@ -56,12 +54,10 @@
 
 ;Funcion del valormin del minimax que jugara por el humano
 (define (valor-min tablero altura alfa beta IA jugador)
-  (display altura)
   (cond
-    [(or (estado-terminal tablero) (= altura 4)) (eval tablero IA jugador)]
+    [(or (estado-terminal tablero) (= altura 6)) (eval tablero IA jugador)]
     [else
      (for ([i '(0 1 2 3 4 5 6)])
-       (set! altura (sub1 altura))
        (cond
          [(verificar-columna tablero i)
           (set! beta (min beta (valor-max (jugada tablero jugador i) (add1 altura) alfa beta IA jugador)))
