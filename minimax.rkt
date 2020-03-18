@@ -27,40 +27,44 @@
 (define maximo-actual -10000)
 
 ;Funcion principal que realiza el algoritmo de minimax
-(define (minimax tablero maximo columna)
+(define (minimax tablero maximo columna IA jugador)
   (cond
     [(> columna 6) mejor-columna]
     [(verificar-columna tablero columna)
-     (set! maximo-actual (valor-min (jugada tablero 1 columna) 1 -10000 10000))
+     (set! maximo-actual (valor-min (jugada tablero IA columna) 1 -10000 10000 IA jugador))
      (cond
        [(> maximo-actual maximo)
         (set! maximo maximo-actual)
         (set! mejor-columna columna)
-        (minimax tablero maximo (add1 columna))]
-       [else (minimax tablero maximo (add1 columna))])]
-    [else (minimax tablero maximo (add1 columna))]))
+        (minimax tablero maximo (add1 columna) IA jugador)]
+       [else (minimax tablero maximo (add1 columna) IA jugador)])]
+    [else (minimax tablero maximo (add1 columna) IA jugador)]))
 
 ;Funcion del valormax del minimax que jugara por la IA
-(define (valor-max tablero altura alfa beta)
+(define (valor-max tablero altura alfa beta IA jugador)
+  (display altura)
   (cond
-    [(or (estado-terminal tablero) (= altura 6)) (eval tablero)]
+    [(or (estado-terminal tablero) (= altura 4)) (eval tablero IA jugador)]
     [else
      (for ([i '(0 1 2 3 4 5 6)])
+       (set! altura (sub1 altura))
        (cond
          [(verificar-columna tablero i)
-          (set! alfa (max alfa (valor-min (jugada tablero 1 i) (add1 altura) alfa beta)))
+          (set! alfa (max alfa (valor-min (jugada tablero IA i) (add1 altura) alfa beta IA jugador)))
           (cond [(>= alfa beta) beta])]))
      alfa]))
 
 ;Funcion del valormin del minimax que jugara por el humano
-(define (valor-min tablero altura alfa beta)
+(define (valor-min tablero altura alfa beta IA jugador)
+  (display altura)
   (cond
-    [(or (estado-terminal tablero) (= altura 6)) (eval tablero)]
+    [(or (estado-terminal tablero) (= altura 4)) (eval tablero IA jugador)]
     [else
      (for ([i '(0 1 2 3 4 5 6)])
+       (set! altura (sub1 altura))
        (cond
          [(verificar-columna tablero i)
-          (set! beta (min beta (valor-max (jugada tablero 2 i) (add1 altura) alfa beta)))
+          (set! beta (min beta (valor-max (jugada tablero jugador i) (add1 altura) alfa beta IA jugador)))
           (cond [(>= alfa beta) alfa])]))
      beta]))
 
@@ -75,11 +79,11 @@
     [else #f]))
 
 ;Funcion eval de la heuristica del minimax
-(define (eval tablero)
+(define (eval tablero IA jugador)
   (cond
-    [(gano tablero 1) 10000]
-    [(gano tablero 2) -10000]
-    [else (- (costo tablero 1) (costo tablero 2))]))
+    [(gano tablero IA) 10000]
+    [(gano tablero jugador) -10000]
+    [else (- (costo tablero IA) (costo tablero jugador))]))
 
 ;Funcion que cuenta las lineas posibles para ganar de un jugador particular
 (define (costo tablero jugador)

@@ -110,12 +110,21 @@
     (if (equal? iniciaComputadora #t)
           (begin
             (set! tiempo1 (/ (current-inexact-milliseconds) 1000))
-            (set! colum (minimax (lista gameBoard) -10000 0))
+            (if (equal? color #t)
+                (set! colum (minimax (lista gameBoard) -10000 0 1 2))
+                (set! colum (minimax (lista gameBoard) -10000 0 2 1)))
             (display (- (/ (current-inexact-milliseconds) 1000) tiempo1))
             (display "  ")
             (placeTile colum)
             (cond
               [(gano (lista gameBoard) 1)
+               (begin
+                 ;(showBoard gameBoard)                
+                 (send gameFrame show #f)
+                 (send endFrame show #t)
+                 (set! winner #t)
+                 (send winFrame show #t))]
+              [(gano (lista gameBoard) 2)
                (begin
                  ;(showBoard gameBoard)                
                  (send gameFrame show #f)
@@ -137,6 +146,13 @@
                          (begin
                            (placeTile col)
                            (cond
+                             [(gano (lista gameBoard) 1)
+                              (begin
+                                ;(showBoard gameBoard)
+                                (send gameFrame show #f)
+                                (send endFrame show #t)
+                                (set! winner #t)
+                                (send winFrame show #t))]
                              [(gano (lista gameBoard) 2)
                               (begin
                                 ;(showBoard gameBoard)
